@@ -98,42 +98,46 @@ userRoutes.delete('/delete-users/:id' , async (req, res) => {
 })
 
 // Ruta para logueo
-authRoutes.post('/login-users' , async (req , res) => {
-   try {
-    // Traemos correo y contraseña del formulario
-    const {correo , password} = req.body
-    const usuario = await user.findOne({correo})
-    if(!usuario){
-        return res.status(401).json({usuario , message : 'Email o contraseña incorrectos'})
-    }
-    // Comparamos la contraseña q envie con el formulario con el usuario que yo traje a traves del correo
-    if(password !== usuario.password){
-        return res.status(401).json({usuario , message : 'Contraseña Incorrecta'})
-    }
-
-    // Generamos el token
-     const token = jwt.sign(
-     {id: usuario._id  , 
-           correo: usuario.correo ,
-          password: usuario.password ,
-         nombre: usuario.nombre,
-         telefono: usuario.telefono ,
-         empresa: usuario.empresa ,
-         domicilio: usuario.domicilio ,
-         admin: usuario.admin} ,
-        'hola123' , {expiresIn : '1h'}) 
-    
-        // Creamos una coquie con sierto nombre donde se guarda el token
-        // Verificamos que es tipo de solicitud http 
-                                 // Duración maxima de validez que va a tener un token
-     res.cookie('llave', token , {httpOnly : true , maxAge : 36000000, sameSite: "lax" , secure: false} )
-
-    return res.status(200).json({message: 'Has iniciado sesión correctamente' , token})
-
-   } catch (error) {
-     console.log(error)
+authRoutes.post('/login-users', async (req, res) => {
+  try {
+   // Traemos correo y contraseña del formulario
+   const { correo, password } = req.body;
+   const usuario = await user.findOne({ correo });
+   if (!usuario) {
+       return res.status(401).json({ usuario, message: 'Email o contraseña incorrectos' });
    }
-})
+   // Comparamos la contraseña q envie con el formulario con el usuario que yo traje a traves del correo
+   if (password !== usuario.password) {
+       return res.status(401).json({ usuario, message: 'Contraseña Incorrecta' });
+   }
+
+   // Generamos el token con la estructura mejorada
+   const token = jwt.sign(
+     {
+       id: String(usuario._id),
+       correo: String(usuario.correo),
+       password: String(usuario.password),
+       nombre: String(usuario.nombre || ''),
+       telefono: String(usuario.telefono || ''),
+       empresa: String(usuario.empresa || ''),
+       domicilio: String(usuario.domicilio || ''),
+       admin: Boolean(usuario.admin)
+     },
+     'hola123',
+     { expiresIn: '1h' }
+   );
+   
+   // Creamos una cookie con cierto nombre donde se guarda el token
+   res.cookie('llave', token, { httpOnly: true, maxAge: 36000000, sameSite: "lax", secure: false });
+
+   return res.status(200).json({ message: 'Has iniciado sesión correctamente', token });
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: 'Error en el servidor' });
+  }
+});
+
 
 
 // Middleware para obtener el token de la coockie
