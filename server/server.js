@@ -144,6 +144,10 @@ authRoutes.get('/logout' , verificarUsuario ,  async (req , res) => {
        return res.status(200).json({message: 'Se elimino el token correctamente'}) 
 })
 
+////////////////
+////////////////
+////////////////
+
 // Empezamos con el CRUD 
 
 userRoutes.post('/create-contact' , verificarUsuario, async (req , res) => {
